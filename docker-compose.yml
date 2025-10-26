@@ -1,0 +1,36 @@
+services:
+  ubuntu:
+    container_name: ubuntu_kasm
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    stdin_open: true
+    privileged: true
+    ports:
+      - "443:443"
+      - "80:80"
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    networks:
+      - docker-casm-network
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup
+
+  ngrok:
+    container_name: ngrok
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command: "http https://ubuntu_kasm:443"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTH_TOKEN}
+    ports:
+      - 4040:4040
+    networks:
+      - docker-casm-network
+
+networks:
+  docker-casm-network:
+    driver: bridge
